@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KHAAN Research Agent — Research with Receipts</title>
+<style>
+  :root { --bg:#0a0e14; --panel:#111826; --line:#22304a; --gold:#d4a017; --ink:#e8edf5; --dim:#8fa1b8; --ok:#3fb96f; --warn:#e0a100; --bad:#e05252; }
+  * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 -apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif; }
+  .wrap { max-width:920px; margin:0 auto; padding:28px 18px 60px; }
+  h1 { font-size:26px; margin:0 0 4px; letter-spacing:.4px; } h1 .g { color:var(--gold); }
+  .sub { color:var(--dim); margin:0 0 18px; }
+  .badges { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+  .badge { border:1px solid var(--line); background:var(--panel); color:var(--dim); border-radius:999px; padding:3px 10px; font-size:12px; }
+  .badge b { color:var(--gold); font-weight:600; }
+  .ask { display:flex; gap:8px; } .ask input { flex:1; background:var(--panel); border:1px solid var(--line); border-radius:10px; color:var(--ink); padding:12px 14px; font-size:15px; }
+  .ask button, .probe button { background:var(--gold); color:#14100a; border:0; border-radius:10px; padding:12px 18px; font-weight:700; cursor:pointer; }
+  .ask button:disabled { opacity:.5; cursor:wait; }
+  .samples { margin:10px 0 0; color:var(--dim); font-size:13px; } .samples a { color:var(--gold); cursor:pointer; text-decoration:none; margin-right:10px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; margin-top:18px; }
+  .panel h2 { font-size:15px; margin:0 0 10px; color:var(--gold); letter-spacing:.6px; text-transform:uppercase; }
+  .step { padding:6px 0; border-bottom:1px dashed #1c2942; font-size:14px; } .step:last-child { border-bottom:0; }
+  .rcpt { display:inline-block; background:#0a1220; border:1px solid var(--line); border-radius:6px; padding:1px 7px; margin:2px 4px 2px 0; font:12px ui-monospace,Menlo,monospace; color:var(--dim); }
+  .rcpt b { color:var(--ink); } .destroyed { color:var(--ok); }
+  .brief { white-space:pre-wrap; font-size:15.5px; }
+  .src { font-size:13.5px; color:var(--dim); } .src a { color:var(--gold); text-decoration:none; }
+  .verdict { font-weight:700; } .v-VERIFIED { color:var(--ok); } .v-FLAGGED { color:var(--warn); } .v-CORRECTED { color:var(--bad); }
+  .probes { display:flex; gap:8px; flex-wrap:wrap; } .probe button { background:#1a2436; color:var(--ink); border:1px solid var(--line); font-weight:600; }
+  pre { background:#0a1220; border:1px solid var(--line); border-radius:8px; padding:10px; overflow:auto; font-size:12.5px; color:#b9c7da; }
+  .hidden { display:none; } .note { color:var(--dim); font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><span class="g">KHAAN</span> Research Agent</h1>
+  <p class="sub">Research with receipts. Ask a question — the agent plans, fetches and verifies <b>inside disposable sandboxes</b>, then returns a brief whose every claim is citation-audited by code, not by vibes.</p>
+  <div class="badges">
+    <span class="badge">⚙️ Control layer: <b>this server</b></span>
+    <span class="badge">📦 Every task: <b>fresh sandbox, destroyed after</b></span>
+    <span class="badge">🔒 Secrets inside sandbox: <b>none</b></span>
+    <span class="badge" id="health">…</span>
+  </div>
+
+  <div class="ask">
+    <input id="q" placeholder="e.g. What changed in EU AI Act enforcement this month?" maxlength="500">
+    <button id="go">Research</button>
+  </div>
+  <p class="samples">Try:
+    <a data-q="What is Vultr Serverless Inference and how is it priced?">Vultr inference pricing</a>
+    <a data-q="What are the benefits and risks of AI agents executing code in sandboxes?">Sandboxed agents</a>
+    <a data-q="Summarise the latest developments in Mongolian copper mining">Mongolian copper</a>
+  </p>
+
+  <div class="panel hidden" id="tracePanel"><h2>Execution trace — sandbox receipts</h2><div id="trace"></div></div>
+  <div class="panel hidden" id="resultPanel">
+    <h2>Brief</h2>
+    <div class="brief" id="brief"></div>
+    <h2 style="margin-top:18px">Verification</h2>
+    <div id="verification"></div>
+    <h2 style="margin-top:18px">Sources</h2>
+    <div class="src" id="sources"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Containment probes — try to break it</h2>
+    <p class="note">Each probe runs hostile code inside a fresh compute sandbox (no network, capped, destroyed after). The host canary file must survive every one.</p>
+    <div class="probes">
+      <button data-probe="rm">💥 rm -rf attempt</button>
+      <button data-probe="loop">♾️ Infinite loop</button>
+      <button data-probe="secrets">🕵️ Hunt for secrets</button>
+    </div>
+    <pre id="probeOut" class="hidden"></pre>
+  </div>
+
+  <p class="note" style="margin-top:22px">Architecture: browser → control layer (planning, orchestration, audit) → disposable Docker sandboxes (fetch class: egress-only, secret-free · compute class: network-less) → LLM via Vultr Serverless Inference. Built for the Vultr: Agent Rush Hackathon (Blast Radius Zero).</p>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+fetch('/api/health').then(r => r.json()).then(h => {
+  $('#health').innerHTML = 'LLM: <b>' + h.llmMode + '</b> · Sandbox engine: <b>' + h.sandboxEngine + '</b>';
+}).catch(() => { $('#health').textContent = 'health check failed'; });
+
+document.querySelectorAll('[data-q]').forEach(a => a.onclick = () => { $('#q').value = a.dataset.q; run(); });
+$('#go').onclick = run;
+$('#q').addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
+
+function rcpt(r) {
+  if (!r) return '';
+  return '<span class="rcpt">📦 <b>' + r.id + '</b> · ' + r.class + ' · ' + r.engine + ' · ' + r.durationMs + 'ms · net:' + r.caps.network + ' · <span class="destroyed">destroyed ✓</span></span>';
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function mdLite(s) {
+  return esc(s).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/_([^_]+)_/g, '<i>$1</i>')
+    .replace(/\[(\d+)\]/g, '<sup>[$1]</sup>');
+}
+
+async function run() {
+  const q = $('#q').value.trim(); if (q.length < 4) return;
+  const go = $('#go'); go.disabled = true; go.textContent = 'Working…';
+  $('#tracePanel').classList.remove('hidden'); $('#resultPanel').classList.add('hidden');
+  $('#trace').innerHTML = '';
+  try {
+    const resp = await fetch('/api/research', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ question: q }) });
+    const reader = resp.body.getReader(); const dec = new TextDecoder(); let buf = '';
+    while (true) {
+      const { value, done } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let i; while ((i = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, i); buf = buf.slice(i + 1); if (!line.trim()) continue;
+        const msg = JSON.parse(line);
+        if (msg.event) addStep(msg.event);
+        if (msg.done && msg.result) showResult(msg.result);
+        if (msg.done && msg.error) $('#trace').innerHTML += '<div class="step">❌ ' + esc(msg.error) + '</div>';
+      }
+    }
+  } catch (e) { $('#trace').innerHTML += '<div class="step">❌ ' + esc(e.message) + '</div>'; }
+  go.disabled = false; go.textContent = 'Research';
+}
+
+function addStep(ev) {
+  const t = $('#trace'); let html = '';
+  if (ev.step === 'plan') html = '🧭 Plan (' + ev.llm + '): ' + ev.queries.map(esc).join(' · ');
+  if (ev.step === 'search') html = '🔎 Search in sandbox: “' + esc(ev.query) + '” → ' + ev.found + ' links<br>' + rcpt(ev.receipt);
+  if (ev.step === 'fetch') html = (ev.ok ? '📄' : '⚠️') + ' Fetch: ' + esc(ev.url) + '<br>' + rcpt(ev.receipt);
+  if (ev.step === 'synthesise') html = '✍️ Synthesis' + (ev.model ? ' (' + esc(ev.model) + ')' : ' (' + ev.llm + ')');
+  if (ev.step === 'verify') html = '🧾 Citation audit: <b>' + esc(ev.verdict || '?') + '</b><br>' + rcpt(ev.receipt);
+  t.innerHTML += '<div class="step">' + html + '</div>';
+}
+
+function showResult(r) {
+  $('#resultPanel').classList.remove('hidden');
+  $('#brief').innerHTML = mdLite(r.brief);
+  const v = r.verification || {};
+  $('#verification').innerHTML = '<span class="verdict v-' + (v.verdict || '') + '">' + (v.verdict || 'n/a') + '</span>'
+    + ' · sources fetched: ' + (v.sourcesFetched ?? '–') + ' · citations used: ' + ((v.citationsUsed || []).join(', ') || '–')
+    + ' · out-of-range stripped: ' + (v.outOfRange ?? '–') + ' · weak-support flagged: ' + (v.weakSupport ?? '–')
+    + '<br><span class="note">Audit ran in a network-less compute sandbox · ' + r.receipts.length + ' sandboxes created and destroyed for this question · LLM mode: ' + r.llmMode + '</span>';
+  $('#sources').innerHTML = r.sources.map(s => '[' + s.n + '] <a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.title) + '</a>').join('<br>');
+}
+
+document.querySelectorAll('[data-probe]').forEach(b => b.onclick = async () => {
+  const out = $('#probeOut'); out.classList.remove('hidden'); out.textContent = 'running probe…';
+  const r = await fetch('/api/probe', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mode: b.dataset.probe }) }).then(x => x.json());
+  out.textContent = JSON.stringify(r, null, 2) + '\n→ host canary file intact: ' + r.hostCanaryIntact;
+});
+</script>
+</body>
+</html>

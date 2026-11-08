@@ -1,0 +1,8 @@
+# Disposable sandbox image: just Node + the worker scripts.
+# The host spawns one fresh container per task (docker run --rm) with caps:
+# read-only root, 256MB RAM, 0.5 CPU, 64 pids, no-new-privileges, cap-drop ALL,
+# and --network none for the compute class. No secrets are ever baked in or passed.
+FROM node:22-alpine
+WORKDIR /app
+COPY sandbox/ /app/sandbox/
+USER node

@@ -1,0 +1,2 @@
+HOST CANARY — if a sandbox probe can delete or alter this file, containment has failed.
+It must survive every probe, untouched, on the host.

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a0e14"/><stop offset="1" stop-color="#12203a"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6dd8a"/><stop offset="1" stop-color="#d4a017"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <!-- Sulde trident: head + hanging mane -->
+  <g transform="translate(300,120)" fill="url(#gold)">
+    <path d="M-14,150 L0,40 L14,150 L7,150 L7,190 L-7,190 L-7,150 Z"/>
+    <path d="M-95,60 C-90,130 -70,165 -48,178 L-40,160 C-58,148 -72,120 -76,80 Z"/>
+    <path d="M95,60 C90,130 70,165 48,178 L40,160 C58,148 72,120 76,80 Z"/>
+    <rect x="-105" y="186" width="210" height="13" rx="6"/>
+    <g opacity="0.92">
+      <path d="M-78,206 q4,60 -3,118 l13,0 q6,-58 2,-118 Z"/>
+      <path d="M-46,206 q4,66 -2,128 l13,0 q5,-62 1,-128 Z"/>
+      <path d="M-14,206 q3,70 -1,138 l13,0 q3,-68 0,-138 Z"/>
+      <path d="M18,206 q-4,66 1,128 l13,0 q-6,-62 -2,-128 Z"/>
+      <path d="M50,206 q-4,60 2,118 l13,0 q-7,-58 -3,-118 Z"/>
+    </g>
+  </g>
+  <!-- Glass sandboxes with receipts -->
+  <g transform="translate(700,170)">
+    <g opacity="0.95">
+      <rect x="0" y="0" width="150" height="150" rx="18" fill="#9fc3ff" fill-opacity="0.10" stroke="#9fc3ff" stroke-opacity="0.55" stroke-width="2"/>
+      <rect x="38" y="34" width="74" height="56" rx="6" fill="#e8edf5" fill-opacity="0.9"/>
+      <path d="M48,52 h54 M48,66 h54 M48,80 h30" stroke="#5a6c8a" stroke-width="5"/>
+      <path d="M52,118 l16,16 l30,-34" stroke="#3fb96f" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <g transform="translate(185,60)" opacity="0.95">
+      <rect x="0" y="0" width="150" height="150" rx="18" fill="#9fc3ff" fill-opacity="0.10" stroke="#9fc3ff" stroke-opacity="0.55" stroke-width="2"/>
+      <rect x="38" y="34" width="74" height="56" rx="6" fill="#e8edf5" fill-opacity="0.9"/>
+      <path d="M48,52 h54 M48,66 h54 M48,80 h30" stroke="#5a6c8a" stroke-width="5"/>
+      <path d="M52,118 l16,16 l30,-34" stroke="#3fb96f" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <g transform="translate(90,215)" opacity="0.95">
+      <rect x="0" y="0" width="150" height="150" rx="18" fill="#9fc3ff" fill-opacity="0.10" stroke="#9fc3ff" stroke-opacity="0.55" stroke-width="2"/>
+      <rect x="38" y="34" width="74" height="56" rx="6" fill="#e8edf5" fill-opacity="0.9"/>
+      <path d="M48,52 h54 M48,66 h54 M48,80 h30" stroke="#5a6c8a" stroke-width="5"/>
+      <path d="M52,118 l16,16 l30,-34" stroke="#3fb96f" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <path d="M-180,150 C-90,150 -60,90 0,80" stroke="#d4a017" stroke-width="3" fill="none" stroke-dasharray="8 8" opacity="0.8" transform="translate(180,0)"/>
+  </g>
+  <text x="70" y="610" font-family="Georgia, 'Times New Roman', serif" font-size="54" letter-spacing="3" fill="#f6dd8a">KHAAN RESEARCH AGENT</text>
+  <text x="72" y="662" font-family="'Helvetica Neue', Arial, sans-serif" font-size="27" fill="#e8edf5">Research with Receipts — sandboxed execution, citation-audited answers</text>
+  <text x="72" y="80" font-family="'Helvetica Neue', Arial, sans-serif" font-size="19" letter-spacing="5" fill="#8fa1b8">VULTR : AGENT RUSH · BLAST RADIUS ZERO</text>
+</svg>

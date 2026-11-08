@@ -5,4 +5,4 @@
 FROM node:22-alpine
 WORKDIR /app
 COPY sandbox/ /app/sandbox/
-USER node
+USER root

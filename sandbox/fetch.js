@@ -8,6 +8,7 @@
  * environment variables beyond PATH — there is nothing to steal in here.
  */
 const url = process.argv[2];
+const allowedFixture = process.argv[3];
 const MAX_BYTES = 2_000_000;
 const MAX_TEXT = 12000;
 
@@ -26,6 +27,23 @@ function htmlToText(html) {
 }
 
 (async () => {
+  if (url && url.startsWith('file://')) {
+    if (url !== allowedFixture) {
+      out({ ok: false, url, error: 'fixture mode rejects a path outside the allowed fixture file' });
+      return;
+    }
+    try {
+      const fs = require('fs');
+      const fp = new URL(url).pathname;
+      const html = fs.readFileSync(fp, 'utf8').slice(0, MAX_BYTES);
+      const title = (html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || '').replace(/\s+/g, ' ').trim().slice(0, 200);
+      out({ ok: true, status: 200, url, title, text: htmlToText(html).slice(0, MAX_TEXT) });
+    } catch (e) {
+      out({ ok: false, url, error: String(e && e.message || e).slice(0, 200) });
+    }
+    return;
+  }
+
   if (!url || !/^https?:\/\//i.test(url)) { out({ ok: false, url: url || '', error: 'bad url' }); return; }
   try {
     const ctl = new AbortController();

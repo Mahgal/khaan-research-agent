@@ -24,7 +24,7 @@ containment-first, like a product you could hand to a compliance team:
   256 MB RAM / 0.5 CPU / 64 PID caps, hard timeouts, `no-new-privileges`, all
   capabilities dropped — destroyed after each task.
 - **No secrets in the blast zone.** Sandbox environments contain no API keys at
-  all (the secrets probe in the demo dumps the environment: only `PATH` exists).
+  all (the secrets probe in the demo dumps the environment: only `PATH` is passed in).
   A prompt-injected web page can shout instructions all day; there is nothing
   inside its sandbox worth stealing, and the page text is treated as data, never
   as instructions.
